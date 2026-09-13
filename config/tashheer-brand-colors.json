@@ -1,0 +1,57 @@
+{
+  "brand": "Tashheer.pk",
+  "tagline": "Apna Ad. Khud Chalao.",
+  "colors": {
+    "primaryOrange": {
+      "hex": "#FF6A00",
+      "rgb": "255, 106, 0",
+      "usage": "Primary CTA buttons, highlights, .pk, key accents"
+    },
+    "accentMagenta": {
+      "hex": "#FF2D7A",
+      "rgb": "255, 45, 122",
+      "usage": "Gradient transition only; use sparingly"
+    },
+    "secondaryPurple": {
+      "hex": "#7B61FF",
+      "rgb": "123, 97, 255",
+      "usage": "Secondary accent, icon lower section, selected UI highlights"
+    },
+    "nearBlack": {
+      "hex": "#0D1117",
+      "rgb": "13, 17, 23",
+      "usage": "Primary text, navigation, dark backgrounds"
+    },
+    "white": {
+      "hex": "#FFFFFF",
+      "rgb": "255, 255, 255",
+      "usage": "Main background"
+    },
+    "lightGray": {
+      "hex": "#F5F6F8",
+      "rgb": "245, 246, 248",
+      "usage": "Cards, subtle sections, borders/background surfaces"
+    }
+  },
+  "gradients": {
+    "brandGradient": "linear-gradient(135deg, #FF6A00 0%, #FF2D7A 52%, #7B61FF 100%)",
+    "brandGradientHorizontal": "linear-gradient(90deg, #FF6A00 0%, #FF2D7A 52%, #7B61FF 100%)"
+  },
+  "cssVariables": {
+    "--tashheer-orange": "#FF6A00",
+    "--tashheer-magenta": "#FF2D7A",
+    "--tashheer-purple": "#7B61FF",
+    "--tashheer-black": "#0D1117",
+    "--tashheer-white": "#FFFFFF",
+    "--tashheer-gray-50": "#F5F6F8",
+    "--tashheer-gradient": "linear-gradient(135deg, #FF6A00 0%, #FF2D7A 52%, #7B61FF 100%)"
+  },
+  "usageRules": [
+    "Keep the main website background predominantly white.",
+    "Use near-black for primary text.",
+    "Use orange for primary actions and important highlights.",
+    "Use purple as the secondary accent.",
+    "Use the full gradient mainly in the logo/icon and selected hero/CTA details.",
+    "Do not make the entire UI gradient-heavy."
+  ]
+}
