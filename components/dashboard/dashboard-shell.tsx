@@ -19,7 +19,8 @@ const shellCopy = {
     help: "Need help?",
     contact: "Contact support",
     preview: "Frontend preview — Meta connections, publishing, accounts, and payments are not live yet.",
-    business: "Lahore Bakes",
+    signOut: "Sign out",
+    adminBadge: "Admin",
   },
   ur: {
     nav: [
@@ -33,14 +34,31 @@ const shellCopy = {
     help: "مدد چاہیے؟",
     contact: "سپورٹ سے رابطہ",
     preview: "فرنٹ اینڈ نمونہ — میٹا کنکشن، اشاعت، اکاؤنٹس اور ادائیگی ابھی فعال نہیں۔",
-    business: "لاہور بیکس",
+    signOut: "سائن آؤٹ",
+    adminBadge: "ایڈمن",
   },
 } as const;
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+type ShellProps = {
+  children: React.ReactNode;
+  displayName?: string;
+  role?: "admin" | "client";
+  email?: string;
+};
+
+function initialsFrom(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+export function DashboardShell({ children, displayName = "You", role = "client", email = "" }: ShellProps) {
   const pathname = usePathname();
   const { language } = useLanguage();
   const t = shellCopy[language];
+  const initials = initialsFrom(displayName);
+  const isAdmin = role === "admin";
 
   return (
     <div className="min-h-screen bg-soft lg:grid lg:grid-cols-[250px_1fr]">
@@ -73,7 +91,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <p className="text-xs font-extrabold text-foreground">{t.help}</p>
             <a href="mailto:hello@tashheer.pk" className="mt-2 inline-block text-xs font-bold text-brand-purple hover:text-brand-orange">{t.contact} →</a>
           </div>
-          <Link href="/" className="mt-5 inline-flex items-center gap-2 text-xs font-bold text-muted hover:text-foreground">← {t.back}</Link>
+          <form action="/auth/signout" method="post" className="mt-5">
+            <button type="submit" className="inline-flex items-center gap-2 text-xs font-bold text-muted hover:text-foreground">
+              ↩ {t.signOut}
+            </button>
+          </form>
+          <Link href="/" className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-muted hover:text-foreground">← {t.back}</Link>
         </div>
       </aside>
 
@@ -83,10 +106,17 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4">
             <LanguageToggle compact />
             <div className="text-end">
-              <p className="text-xs font-extrabold">{t.business}</p>
-              <p className="text-[10px] text-muted">Ahmed Khan</p>
+              <p className="text-xs font-extrabold flex items-center justify-end gap-2">
+                {displayName}
+                {isAdmin && (
+                  <span className="rounded-full bg-brand-orange/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-brand-orange">
+                    {t.adminBadge}
+                  </span>
+                )}
+              </p>
+              <p className="text-[10px] text-muted">{email}</p>
             </div>
-            <span className="grid size-9 place-items-center rounded-full bg-foreground text-[10px] font-black text-white">AK</span>
+            <span className="grid size-9 place-items-center rounded-full bg-foreground text-[10px] font-black text-white">{initials}</span>
           </div>
         </header>
         <div className="border-b border-line bg-brand-orange/10 px-5 py-2.5 text-center text-[10px] font-bold text-brand-orange lg:hidden">{t.preview}</div>
