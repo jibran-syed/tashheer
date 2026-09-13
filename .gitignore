@@ -32,6 +32,12 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# local credential notes — never commit
+supabase-password.txt
+*.password.txt
+*credentials*.txt
 
 # vercel
 .vercel
