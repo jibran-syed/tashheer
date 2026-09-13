@@ -11,9 +11,15 @@ export const metadata: Metadata = {
   description: 'Sign in to your Tashheer account.',
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: PageProps<'/login'>) {
   const user = await getCurrentUser()
   if (user) redirect('/dashboard')
+
+  const params = await searchParams
+  const raw = params?.error
+  const urlError = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined
 
   return (
     <main className="relative min-h-dvh bg-[var(--background)]">
@@ -25,7 +31,7 @@ export default async function LoginPage() {
             width={130}
             height={32}
             priority
-            className="h-8 w-auto"
+            style={{ width: 'auto', height: '2rem' }}
           />
         </Link>
         <LanguageToggle />
@@ -33,12 +39,9 @@ export default async function LoginPage() {
 
       <div className="mx-auto flex min-h-dvh max-w-md items-center justify-center px-6 py-24">
         <div className="w-full">
-          <LoginForm />
+          <LoginForm urlError={urlError} />
           <div className="mt-6 text-center">
-            <Link
-              href="/"
-              className="text-sm text-soft transition hover:text-foreground"
-            >
+            <Link href="/" className="text-sm text-soft transition hover:text-foreground">
               &larr; Back to Tashheer.pk
             </Link>
           </div>

@@ -1,12 +1,17 @@
 'use server'
 
 import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export type SignInState =
   | { status: 'idle' }
   | { status: 'sent'; email: string }
   | { status: 'error'; message: string }
+
+export type VerifyState = { status: 'idle' } | { status: 'error'; message: string }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function sendMagicLink(
   _prev: SignInState,
@@ -18,7 +23,7 @@ export async function sendMagicLink(
   }
   const email = rawEmail.trim().toLowerCase()
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!EMAIL_RE.test(email)) {
     return { status: 'error', message: 'That does not look like a valid email.' }
   }
 
@@ -41,4 +46,25 @@ export async function sendMagicLink(
   }
 
   return { status: 'sent', email }
+}
+
+export async function verifyOtp(_prev: VerifyState, formData: FormData): Promise<VerifyState> {
+  const email = String(formData.get('email') ?? '').trim().toLowerCase()
+  const token = String(formData.get('token') ?? '').replace(/\s+/g, '')
+
+  if (!EMAIL_RE.test(email)) {
+    return { status: 'error', message: 'Missing or invalid email.' }
+  }
+  if (!/^\d{6}$/.test(token)) {
+    return { status: 'error', message: 'Enter the 6-digit code from your email.' }
+  }
+
+  const supabase = await createSupabaseServerClient()
+  const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
+
+  if (error) {
+    return { status: 'error', message: error.message }
+  }
+
+  redirect('/dashboard')
 }
