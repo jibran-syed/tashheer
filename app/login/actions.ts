@@ -66,5 +66,15 @@ export async function verifyOtp(_prev: VerifyState, formData: FormData): Promise
     return { status: 'error', message: error.message }
   }
 
-  redirect('/dashboard')
+  const { data: { user } } = await supabase.auth.getUser()
+  let destination = '/dashboard'
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single<{ role: 'admin' | 'client' }>()
+    if (profile?.role === 'admin') destination = '/admin'
+  }
+  redirect(destination)
 }

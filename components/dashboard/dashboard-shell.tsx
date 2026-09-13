@@ -6,36 +6,53 @@ import { Logo } from "@/components/logo";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 
+export type NavItem = readonly [label: string, href: string, icon: string];
+export type NavConfig = {
+  en: readonly NavItem[];
+  ur: readonly NavItem[];
+  ariaLabel?: { en: string; ur: string };
+};
+
+const defaultClientNav: NavConfig = {
+  en: [
+    ["Overview", "/dashboard", "⌂"],
+    ["My Ads", "/dashboard/ads", "↗"],
+    ["Create Ad", "/dashboard/create", "+"],
+    ["Billing", "/dashboard/billing", "₨"],
+    ["Settings", "/dashboard/settings", "⚙"],
+  ],
+  ur: [
+    ["خلاصہ", "/dashboard", "⌂"],
+    ["میرے اشتہارات", "/dashboard/ads", "↗"],
+    ["اشتہار بنائیں", "/dashboard/create", "+"],
+    ["بلنگ", "/dashboard/billing", "₨"],
+    ["ترتیبات", "/dashboard/settings", "⚙"],
+  ],
+  ariaLabel: { en: "Customer dashboard", ur: "کسٹمر ڈیش بورڈ" },
+};
+
 const shellCopy = {
   en: {
-    nav: [
-      ["Overview", "/dashboard", "⌂"],
-      ["My Ads", "/dashboard/ads", "↗"],
-      ["Create Ad", "/dashboard/create", "+"],
-      ["Billing", "/dashboard/billing", "₨"],
-      ["Settings", "/dashboard/settings", "⚙"],
-    ],
     back: "Back to website",
     help: "Need help?",
     contact: "Contact support",
-    preview: "Frontend preview — Meta connections, publishing, accounts, and payments are not live yet.",
+    previewClient: "Frontend preview — Meta connections, publishing, accounts, and payments are not live yet.",
+    previewAdmin: "Admin console — Meta publishing goes live in Phase 4.",
     signOut: "Sign out",
     adminBadge: "Admin",
+    switchToAdmin: "Switch to admin console →",
+    viewAsCustomer: "View customer dashboard →",
   },
   ur: {
-    nav: [
-      ["خلاصہ", "/dashboard", "⌂"],
-      ["میرے اشتہارات", "/dashboard/ads", "↗"],
-      ["اشتہار بنائیں", "/dashboard/create", "+"],
-      ["بلنگ", "/dashboard/billing", "₨"],
-      ["ترتیبات", "/dashboard/settings", "⚙"],
-    ],
     back: "ویب سائٹ پر واپس",
     help: "مدد چاہیے؟",
     contact: "سپورٹ سے رابطہ",
-    preview: "فرنٹ اینڈ نمونہ — میٹا کنکشن، اشاعت، اکاؤنٹس اور ادائیگی ابھی فعال نہیں۔",
+    previewClient: "فرنٹ اینڈ نمونہ — میٹا کنکشن، اشاعت، اکاؤنٹس اور ادائیگی ابھی فعال نہیں۔",
+    previewAdmin: "ایڈمن کنسول — Meta پبلشنگ Phase 4 میں لائیو ہو گی۔",
     signOut: "سائن آؤٹ",
     adminBadge: "ایڈمن",
+    switchToAdmin: "ایڈمن کنسول پر جائیں ←",
+    viewAsCustomer: "کسٹمر ڈیش بورڈ دیکھیں ←",
   },
 } as const;
 
@@ -44,6 +61,8 @@ type ShellProps = {
   displayName?: string;
   role?: "admin" | "client";
   email?: string;
+  nav?: NavConfig;
+  variant?: "client" | "admin";
 };
 
 function initialsFrom(name: string) {
@@ -53,12 +72,27 @@ function initialsFrom(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function DashboardShell({ children, displayName = "You", role = "client", email = "" }: ShellProps) {
+export function DashboardShell({
+  children,
+  displayName = "You",
+  role = "client",
+  email = "",
+  nav,
+  variant = "client",
+}: ShellProps) {
   const pathname = usePathname();
   const { language } = useLanguage();
   const t = shellCopy[language];
   const initials = initialsFrom(displayName);
   const isAdmin = role === "admin";
+
+  const navConfig = nav ?? defaultClientNav;
+  const navItems = navConfig[language];
+  const navAriaLabel =
+    navConfig.ariaLabel?.[language] ?? (variant === "admin" ? "Admin" : "Dashboard");
+
+  const previewLabel = variant === "admin" ? t.previewAdmin : t.previewClient;
+  const rootBase = variant === "admin" ? "/admin" : "/dashboard";
 
   return (
     <div className="min-h-screen bg-soft lg:grid lg:grid-cols-[250px_1fr]">
@@ -68,9 +102,9 @@ export function DashboardShell({ children, displayName = "You", role = "client",
           <div className="lg:hidden"><LanguageToggle compact /></div>
         </div>
 
-        <nav className="flex gap-2 overflow-x-auto px-4 pb-4 lg:flex-col lg:overflow-visible lg:px-4 lg:pb-0" aria-label="Customer dashboard">
-          {t.nav.map(([label, href, icon]) => {
-            const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+        <nav className="flex gap-2 overflow-x-auto px-4 pb-4 lg:flex-col lg:overflow-visible lg:px-4 lg:pb-0" aria-label={navAriaLabel}>
+          {navItems.map(([label, href, icon]) => {
+            const active = href === rootBase ? pathname === href : pathname.startsWith(href);
             return (
               <Link
                 key={href}
@@ -91,6 +125,16 @@ export function DashboardShell({ children, displayName = "You", role = "client",
             <p className="text-xs font-extrabold text-foreground">{t.help}</p>
             <a href="mailto:hello@tashheer.pk" className="mt-2 inline-block text-xs font-bold text-brand-purple hover:text-brand-orange">{t.contact} →</a>
           </div>
+          {isAdmin && variant === "client" && (
+            <Link href="/admin" className="mt-5 inline-flex items-center gap-2 text-xs font-bold text-brand-orange hover:brightness-110">
+              {t.switchToAdmin}
+            </Link>
+          )}
+          {isAdmin && variant === "admin" && (
+            <Link href="/dashboard" className="mt-5 inline-flex items-center gap-2 text-xs font-bold text-brand-orange hover:brightness-110">
+              {t.viewAsCustomer}
+            </Link>
+          )}
           <form action="/auth/signout" method="post" className="mt-5">
             <button type="submit" className="inline-flex items-center gap-2 text-xs font-bold text-muted hover:text-foreground">
               ↩ {t.signOut}
@@ -102,7 +146,7 @@ export function DashboardShell({ children, displayName = "You", role = "client",
 
       <div className="min-w-0">
         <header className="hidden h-[74px] items-center justify-between border-b border-line bg-white px-7 lg:flex">
-          <span className="rounded-full bg-brand-orange/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-brand-orange">{t.preview}</span>
+          <span className="rounded-full bg-brand-orange/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-brand-orange">{previewLabel}</span>
           <div className="flex items-center gap-4">
             <LanguageToggle compact />
             <div className="text-end">
@@ -119,7 +163,7 @@ export function DashboardShell({ children, displayName = "You", role = "client",
             <span className="grid size-9 place-items-center rounded-full bg-foreground text-[10px] font-black text-white">{initials}</span>
           </div>
         </header>
-        <div className="border-b border-line bg-brand-orange/10 px-5 py-2.5 text-center text-[10px] font-bold text-brand-orange lg:hidden">{t.preview}</div>
+        <div className="border-b border-line bg-brand-orange/10 px-5 py-2.5 text-center text-[10px] font-bold text-brand-orange lg:hidden">{previewLabel}</div>
         <main className="p-5 sm:p-7 lg:p-9">{children}</main>
       </div>
     </div>

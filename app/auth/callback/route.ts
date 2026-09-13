@@ -1,13 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
+async function pickDestination(explicit: string | null): Promise<string> {
+  if (explicit && explicit.startsWith('/')) return explicit
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return '/dashboard'
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single<{ role: 'admin' | 'client' }>()
+  return profile?.role === 'admin' ? '/admin' : '/dashboard'
+}
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const code = url.searchParams.get('code')
-  const next = url.searchParams.get('next') ?? '/dashboard'
+  const next = url.searchParams.get('next')
 
-  // Supabase returns error info as query params when the OTP is expired,
-  // reused, or otherwise invalid.
   const err = url.searchParams.get('error')
   const errDesc = url.searchParams.get('error_description')
   const errCode = url.searchParams.get('error_code')
@@ -34,5 +45,6 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  return NextResponse.redirect(new URL(next, request.url))
+  const destination = await pickDestination(next)
+  return NextResponse.redirect(new URL(destination, request.url))
 }
