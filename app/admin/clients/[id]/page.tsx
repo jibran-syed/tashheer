@@ -53,15 +53,23 @@ export default async function ClientDetailPage({ params }: PageProps<"/admin/cli
             </p>
           </div>
           {!isArchived && (
-            <form action={archiveBusinessAction}>
-              <input type="hidden" name="id" value={b.id} />
-              <button
-                type="submit"
-                className="rounded-full border border-line px-4 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/admin/clients/${b.id}/ads`}
+                className="rounded-full bg-foreground px-4 py-2 text-xs font-semibold text-white transition hover:brightness-110"
               >
-                Archive client
-              </button>
-            </form>
+                View ads →
+              </Link>
+              <form action={archiveBusinessAction}>
+                <input type="hidden" name="id" value={b.id} />
+                <button
+                  type="submit"
+                  className="rounded-full border border-line px-4 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                >
+                  Archive client
+                </button>
+              </form>
+            </div>
           )}
           {isArchived && (
             <form action={unarchiveBusinessAction}>
